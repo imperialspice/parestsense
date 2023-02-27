@@ -56,10 +56,9 @@ void writeConfig(std::string fileName, std::vector<double> output){
     // there needs to be the number of param values and three zeros a the top of the file
     double size = output.size();
     std::ofstream paramDat("t/"+fileName);
-    output.insert(output.begin(), {size, 0.0, 0.0,0.0});
-
+    paramDat << size << "\n" << "0\n" << "0\n" << "0\n" << std::flush;
     for(auto number : output){
-        paramDat << std::setprecision(0) << std::scientific << number << "\n";
+        paramDat << std::setprecision(5) << std::scientific << number << "\n";
     }
     paramDat.close();
 }
