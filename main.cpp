@@ -59,7 +59,7 @@ void writeConfig(std::string fileName, std::vector<double> output){
     output.insert(output.begin(), {size, 0.0, 0.0,0.0});
 
     for(auto number : output){
-        paramDat << number << "\n";
+        paramDat << std::setprecision(0) << std::scientific << number << "\n";
     }
     paramDat.close();
 }
