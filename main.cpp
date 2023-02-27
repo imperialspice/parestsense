@@ -144,7 +144,13 @@ void writeToTOML(std::string fileName, std::vector<double> &params, std::vector<
     tomlOutput << "[" << fileName << "]" << "\n" << std::flush;
     tomlOutput << "[investigation]" << "\n" << std::flush;
     tomlOutput << "current_parameter_investigated = " << currentParameter << std::endl;
-    tomlOutput << "current_parameter_value = " << (double)params.at(currentParameter) << std::endl;
+    if(params.size() > currentParameter){ // check for cases when were not running specificity
+        tomlOutput << "current_parameter_value = " << (double)params.at(currentParameter) << std::endl;
+    }
+    else{
+        tomlOutput << "current_parameter_value = 0.0" << std::endl;
+    }
+
     tomlOutput << "[params]\n" << std::flush;
     for(int i = 0; i < params.size(); i++){
         tomlOutput << "param_" << i << " = " << params.at(i) << std::endl;
