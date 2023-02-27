@@ -1,0 +1,17 @@
+[options]
+method = "linear"
+output_dir = "output"
+param_dir = "t"
+final_dir = "final"
+toml_dir = "toml"
+[spec]
+xA_1 = 2.344
+xA_2 = 303.40
+xB_1 = 2.344
+xB_2 = 303.40
+xC_1 = 2.344
+xC_2 = 303.40
+xD_1 = 2.344
+xD_2 = 303.40
+xE_1 = [0.0, 10.0, 1.0]
+xE_2 = [10.0, 5.0, 3.0, 1.0]

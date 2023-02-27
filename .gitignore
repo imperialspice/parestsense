@@ -1,6 +1,7 @@
 cmake-**
-compiled_deps*
-final*
-output*
-t*
-toml*
+compiled_deps/**
+final/**
+output/**
+t/**
+toml/**
+deps/**
