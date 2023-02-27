@@ -22,7 +22,7 @@ include_directories(parestSense PUBLIC deps/stduuid)
 
 
 target_link_libraries(parestSense uuid)
-
+target_link_libraries(generateGraphs PRIVATE stdc++fs)
 
 
 set_target_properties(parestSense PROPERTIES

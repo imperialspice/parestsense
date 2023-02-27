@@ -54,7 +54,11 @@ int countItterations(const std::map<std::string, std::vector<double>>& data){
 }
 
 void writeConfig(std::string fileName, std::vector<double> output){
+    // there needs to be the number of param values and three zeros a the top of the file
+    double size = output.size();
     std::ofstream paramDat("t/"+fileName);
+    output.insert(output.begin(), {size, 0.0, 0.0,0.0});
+
     for(auto number : output){
         paramDat << number << "\n";
     }
@@ -66,6 +70,7 @@ int execute(std::string fileParam, std::string fileResults){
     buffer = new char[256];
     snprintf(buffer, 256, "./parest -p %s -d ddat.in -z %s", fileParam.c_str(), fileResults.c_str());
     int status = system(buffer);
+    std::cout << "Status Returned: " << status << std::endl;
    return status;
 
 }
