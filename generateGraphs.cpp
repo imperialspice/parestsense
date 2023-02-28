@@ -11,6 +11,12 @@ struct legend{
     std::string currentParameter;
 };
 
+struct graph{
+    std::string title;
+    sciplot::Plot2D plot;
+    std::string fileName;
+};
+
 double getFloating(toml::value value){
     if(value.is_integer()){
         return (double) value.as_integer();
@@ -23,11 +29,26 @@ double getFloating(toml::value value){
 
 }
 
-int main(){
+int main(int argv, char** argc){
+    if(argv != 4){
+        std::cout << "Please use the following format to produce graphs.\n";
+        std::cout << "./generateGraphs dataDir graphDir species\n";
+        std::cout << "dataDir - Directory containing the generated toml files.\n";
+        std::cout << "graphDir - Directory to save the produced graphs.\n";
+        std::cout << "species - the species, identified by number to produce graphs for\n0 - all species, with any other number only printing that specific species.\n";
+        std::cout << std::flush;
+        exit(0);
+    }
+
+    std::string dataDir = std::string(argc[1]);
+    std::string graphDir = std::string(argc[2]);
+    std::string species = std::string(argc[3]);
+
+    std::cout << dataDir << graphDir << species << std::endl;
 
     // hard code dir
     std::vector<std::string> tomlFiles;
-    std::string tomlDir = "./toml";
+    std::string tomlDir = dataDir;
     for (const auto & entry : std::filesystem::directory_iterator(tomlDir)){
         tomlFiles.push_back(entry.path());
     }
@@ -101,19 +122,70 @@ int main(){
 
     }
 
-    std::cout << "done" << std::endl;
+    std::cout << "plotting" << std::endl;
 
-    sciplot::Plot2D testPlot;
-    int x = 0;
-    testPlot.fontSize(10);
-    testPlot.drawDots(mean.at(x), stddiv.at(x));
+    int species_int = std::stoi(species);
+    if(species_int > mean.size()){std::cout << "Specific species value too large."; exit(0);}
+    int startingInt = species_int > 0 ? species_int:0;
+    int endInt = species_int > 0 ? species_int+1:mean.size();
 
-    sciplot::Figure fig = {{testPlot}};
-    fig.title("All test");
-    sciplot::Canvas canvas = {{fig}};
-    canvas.size(1000, 1000);
-    canvas.save("test.svg");
 
+    std::vector<double> xVector;
+    std::vector<double> yVector;
+
+    for(int sp = startingInt; sp < endInt; sp++){
+        graph currentGraph = {"", sciplot::Plot2D(), ""};
+        for(int x = 0; x < mean.at(sp).size(); x++){
+            std::cout << mean.at(sp).at(x) << std::endl;
+            xVector.push_back(mean.at(sp).at(x));
+            yVector.push_back(stddiv.at(sp).at(x));
+            currentGraph.plot.drawDots(xVector, yVector).label(
+                    std::to_string(legends.at(sp).value));
+            if(currentGraph.title.empty()) currentGraph.title = legends.at(sp).currentParameter;
+            xVector.clear(); yVector.clear();
+        }
+        currentGraph.plot.xlabel("mean");
+        currentGraph.plot.ylabel("standard deviation");
+        currentGraph.plot.fontSize(14);
+        currentGraph.plot.palette("parula");
+
+        currentGraph.fileName = currentGraph.title;
+
+        sciplot::Figure fig = {{currentGraph.plot}};
+        fig.title(currentGraph.title);
+
+        sciplot::Canvas canvas = {{fig}};
+        canvas.size(1000, 1000);
+        std::string fileName = "/output"+(currentGraph.fileName)+"_"+std::to_string(sp)+"_"+".svg";
+        canvas.save(graphDir+fileName);
+
+    }
+
+
+
+
+
+//
+//    for(int x = startingInt; x < endInt; x++) {
+//        sciplot::Plot2D testPlot;
+//        testPlot.xlabel("mean");
+//        testPlot.ylabel("standard deviation");
+//        testPlot.fontSize(10);
+//        testPlot.palette("parula");
+//        sciplot::Figure fig = {{testPlot}};
+//        // since we are plotting each individial point as a new series we need to iterate over it
+//        for(int y = 0; y < mean.at(x).size(); y++){
+//            testPlot.drawDots(std::vector<double>{mean.at(x).at(y)},std::vector<double>{stddiv.at(x).at(y)}).label(std::to_string(legends.at(y).value));
+//            fig.title(legends.at(y).currentParameter);
+//        }
+//        //testPlot.drawDots(mean.at(x), stddiv.at(x)).label(std::to_string(legends.at(x).value));
+//
+//
+//        sciplot::Canvas canvas = {{fig}};
+//        canvas.size(1000, 1000);
+//        std::string fileName = "/output"+ std::to_string(x)+".svg";
+//        canvas.save(graphDir+fileName);
+//    }
 
 
 
