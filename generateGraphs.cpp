@@ -29,13 +29,97 @@ double getFloating(toml::value value){
 
 }
 
+void plot(std::string species, std::map<double,std::vector<double>> mean, std::map<double, std::vector<double>> stddiv, std::vector<legend> legends, std::string graphDir, std::string currentSpecies){
+
+    std::cout << "plotting" << std::endl;
+
+    int species_int = std::stoi(species);
+    if(species_int > mean.size()){std::cout << "Specific species value too large."; exit(0);}
+    int startingInt = species_int > 0 ? species_int:0;
+    int endInt = species_int > 0 ? species_int+1:mean.size();
+
+
+    for(int sp = startingInt; sp < endInt; sp++){
+        // get current mean, stddiv and legend vector
+        auto currentMean = mean.at(sp);
+        auto currentSD = stddiv.at(sp);
+        std::vector<double> currentLegend;
+        for(auto &i : legends){
+            currentLegend.push_back(i.value);
+        }
+
+        sciplot::Plot3D currentPlot;
+        currentPlot.xlabel("mean");
+        currentPlot.ylabel("standard deviation");
+        std::string zlabel;
+        zlabel = "species_"+std::to_string(sp);
+        currentPlot.zlabel(zlabel);
+        currentPlot.border().clear();
+        currentPlot.border().bottomLeftFront();
+        currentPlot.border().bottomRightFront();
+        currentPlot.border().leftVertical();
+
+        currentPlot.drawDots(currentMean, currentSD, currentLegend);
+        currentPlot.palette("parula");
+        sciplot::Figure fig = {{currentPlot}};
+        fig.title(legends.at(sp).currentParameter);
+
+        sciplot::Canvas can = {{fig}};
+        can.size(1000, 1000);
+        std::string graphName = graphDir+"/figure_param_"+legends.at(sp).currentParameter+"_species_"+std::to_string(sp)+".pdf";
+        can.save(graphName);
+
+    }
+}
+
+void writeData(std::string species, std::map<double, std::vector<double>> mean, std::map<double, std::vector<double>> stddiv, std::vector<legend> legends, std::string graphDir, std::string currentSpecies){
+    std::cout << "Outputing CSV Files." << std::endl;
+
+    int species_int = std::stoi(species);
+    if(species_int > mean.size()){std::cout << "Specific species value too large."; exit(0);}
+    int startingInt = species_int > 0 ? species_int:0;
+    int endInt = species_int > 0 ? species_int+1:mean.size();
+
+
+    for(int sp = startingInt; sp < endInt; sp++) {
+        // get current mean, stddiv and legend vector
+        auto currentMean = mean.at(sp);
+        auto currentSD = stddiv.at(sp);
+        std::vector<double> currentLegend;
+        for (auto &i: legends) {
+            currentLegend.push_back(i.value);
+        }
+        std::string graphName = graphDir+"/figure_param_"+legends.at(0).currentParameter+"_species_"+std::to_string(sp)+".csv";
+        std::ofstream outputFile(graphName);
+
+        // outputing to csv file from here.
+        outputFile << "species\t" << "species value\t"<< "mean\t" << "stddev\n";
+
+        if(currentMean.size() != currentSD.size()) return;
+
+
+        int size = currentMean.size();
+        outputFile.precision(10);
+
+        for(int i = 0; i < size; i++){
+            outputFile << legends.at(0).currentParameter << "\t" << currentLegend.at(i) << "\t";
+            outputFile << currentMean.at(i) << "\t" << currentSD.at(i) << "\n";
+        }
+        outputFile << std::flush;
+        outputFile.close();
+    }
+
+}
+
+
 int main(int argv, char** argc){
-    if(argv != 4){
+    if(argv != 5){
         std::cout << "Please use the following format to produce graphs.\n";
-        std::cout << "./generateGraphs dataDir graphDir species\n";
+        std::cout << "./generateGraphs dataDir graphDir species mode\n";
         std::cout << "dataDir - Directory containing the generated toml files.\n";
         std::cout << "graphDir - Directory to save the produced graphs.\n";
         std::cout << "species - the species, identified by number to produce graphs for\n0 - all species, with any other number only printing that specific species.\n";
+        std::cout << "mode - either a 0 - svg mode or 1 to output data to csv files.\n";
         std::cout << std::flush;
         exit(0);
     }
@@ -43,6 +127,7 @@ int main(int argv, char** argc){
     std::string dataDir = std::string(argc[1]);
     std::string graphDir = std::string(argc[2]);
     std::string species = std::string(argc[3]);
+    int mode = std::stoi(argc[4]);
 
     std::cout << dataDir << graphDir << species << std::endl;
 
@@ -106,6 +191,20 @@ int main(int argv, char** argc){
 
             }
         }
+
+
+        // TODO: Split lists so that the parameters for one file are always the same.
+
+
+        //
+
+        if(mode == 0){
+            plot(species, mean,  stddiv, legends, graphDir, "");
+        }
+        else{
+            writeData(species, mean, stddiv, legends, graphDir, "");
+        }
+
 //        for(int i = 0; i < results.size(); i++){
 //            auto result = results.(i);
 //            if(i % 2 == 0){
@@ -118,43 +217,5 @@ int main(int argv, char** argc){
 
     }
 
-    std::cout << "plotting" << std::endl;
 
-    int species_int = std::stoi(species);
-    if(species_int > mean.size()){std::cout << "Specific species value too large."; exit(0);}
-    int startingInt = species_int > 0 ? species_int:0;
-    int endInt = species_int > 0 ? species_int+1:mean.size();
-
-
-    for(int sp = startingInt; sp < endInt; sp++){
-        // get current mean, stddiv and legend vector
-        auto currentMean = mean.at(sp);
-        auto currentSD = stddiv.at(sp);
-        std::vector<double> currentLegend;
-        for(auto &i : legends){
-            currentLegend.push_back(i.value);
-        }
-
-        sciplot::Plot3D currentPlot;
-        currentPlot.xlabel("mean");
-        currentPlot.ylabel("standard deviation");
-        std::string zlabel;
-        zlabel = "species_"+std::to_string(sp);
-        currentPlot.zlabel(zlabel);
-        currentPlot.border().clear();
-        currentPlot.border().bottomLeftFront();
-        currentPlot.border().bottomRightFront();
-        currentPlot.border().leftVertical();
-
-        currentPlot.drawDots(currentMean, currentSD, currentLegend);
-        currentPlot.palette("parula");
-        sciplot::Figure fig = {{currentPlot}};
-        fig.title(legends.at(sp).currentParameter);
-
-        sciplot::Canvas can = {{fig}};
-        can.size(1000, 1000);
-        std::string graphName = graphDir+"/figure_param_"+legends.at(sp).currentParameter+"_species_"+std::to_string(sp)+".pdf";
-        can.save(graphName);
-
-    }
 }

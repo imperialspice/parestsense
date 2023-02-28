@@ -229,7 +229,7 @@ void linear(const std::map<std::string, std::vector<double>> data, int currentCo
 
     for(int x = 0; x < currentTarget; x++){
         double currentValue = position + x*step;
-        if(currentValue >= hLimit){
+        if(currentValue > hLimit){
             linear(data, count+x, currentTarget-x, totalCount);
             break;
         }
