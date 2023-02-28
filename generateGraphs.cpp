@@ -105,10 +105,6 @@ int main(int argv, char** argc){
                 }
 
             }
-
-
-            std::cout << "First: " << name << std::endl;
-            std::cout << "second: " << i.second << std::endl;
         }
 //        for(int i = 0; i < results.size(); i++){
 //            auto result = results.(i);
@@ -152,7 +148,7 @@ int main(int argv, char** argc){
 
         sciplot::Figure fig = {{currentPlot}};
         sciplot::Canvas can = {{fig}};
-        std::string graphName = graphDir+"/figure_param_"+legends.at(sp).currentParameter+".svg";
+        std::string graphName = graphDir+"/figure_param_"+legends.at(sp).currentParameter+"_species_"+std::to_string(sp)+".svg";
         can.save(graphName);
 
     }
