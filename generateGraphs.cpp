@@ -138,16 +138,19 @@ int main(int argv, char** argc){
         sciplot::Plot3D currentPlot;
         currentPlot.xlabel("mean");
         currentPlot.ylabel("standard deviation");
-        currentPlot.zlabel("species " +legends.at(sp).currentParameter);
+        std::string zlabel;
+        zlabel = "speices_"+legends.at(sp).currentParameter;
+        currentPlot.zlabel(zlabel);
         currentPlot.border().clear();
         currentPlot.border().bottomLeftFront();
         currentPlot.border().bottomRightFront();
         currentPlot.border().leftVertical();
 
         currentPlot.drawDots(currentMean, currentSD, currentLegend);
-
+        currentPlot.palette("parula");
         sciplot::Figure fig = {{currentPlot}};
         sciplot::Canvas can = {{fig}};
+        can.size(1000, 1000);
         std::string graphName = graphDir+"/figure_param_"+legends.at(sp).currentParameter+"_species_"+std::to_string(sp)+".svg";
         can.save(graphName);
 
