@@ -130,64 +130,30 @@ int main(int argv, char** argc){
     int endInt = species_int > 0 ? species_int+1:mean.size();
 
 
-    std::vector<double> xVector;
-    std::vector<double> yVector;
-
     for(int sp = startingInt; sp < endInt; sp++){
-        graph currentGraph = {"", sciplot::Plot2D(), ""};
-        for(int x = 0; x < mean.at(sp).size(); x++){
-            std::cout << mean.at(sp).at(x) << std::endl;
-            xVector.push_back(mean.at(sp).at(x));
-            yVector.push_back(stddiv.at(sp).at(x));
-            currentGraph.plot.drawDots(xVector, yVector).label(
-                    std::to_string(legends.at(sp).value));
-            if(currentGraph.title.empty()) currentGraph.title = legends.at(sp).currentParameter;
-            xVector.clear(); yVector.clear();
+        // get current mean, stddiv and legend vector
+        auto currentMean = mean.at(sp);
+        auto currentSD = stddiv.at(sp);
+        std::vector<double> currentLegend;
+        for(auto &i : legends){
+            currentLegend.push_back(i.value);
         }
-        currentGraph.plot.xlabel("mean");
-        currentGraph.plot.ylabel("standard deviation");
-        currentGraph.plot.fontSize(14);
-        currentGraph.plot.palette("parula");
 
-        currentGraph.fileName = currentGraph.title;
+        sciplot::Plot3D currentPlot;
+        currentPlot.xlabel("mean");
+        currentPlot.ylabel("standard deviation");
+        currentPlot.zlabel("species " +legends.at(sp).currentParameter);
+        currentPlot.border().clear();
+        currentPlot.border().bottomLeftFront();
+        currentPlot.border().bottomRightFront();
+        currentPlot.border().leftVertical();
 
-        sciplot::Figure fig = {{currentGraph.plot}};
-        fig.title(currentGraph.title);
+        currentPlot.drawDots(currentMean, currentSD, currentLegend);
 
-        sciplot::Canvas canvas = {{fig}};
-        canvas.size(1000, 1000);
-        std::string fileName = "/output"+(currentGraph.fileName)+"_"+std::to_string(sp)+"_"+".svg";
-        canvas.save(graphDir+fileName);
+        sciplot::Figure fig = {{currentPlot}};
+        sciplot::Canvas can = {{fig}};
+        std::string graphName = graphDir+"/figure_param_"+legends.at(sp).currentParameter+".svg";
+        can.save(graphName);
 
     }
-
-
-
-
-
-//
-//    for(int x = startingInt; x < endInt; x++) {
-//        sciplot::Plot2D testPlot;
-//        testPlot.xlabel("mean");
-//        testPlot.ylabel("standard deviation");
-//        testPlot.fontSize(10);
-//        testPlot.palette("parula");
-//        sciplot::Figure fig = {{testPlot}};
-//        // since we are plotting each individial point as a new series we need to iterate over it
-//        for(int y = 0; y < mean.at(x).size(); y++){
-//            testPlot.drawDots(std::vector<double>{mean.at(x).at(y)},std::vector<double>{stddiv.at(x).at(y)}).label(std::to_string(legends.at(y).value));
-//            fig.title(legends.at(y).currentParameter);
-//        }
-//        //testPlot.drawDots(mean.at(x), stddiv.at(x)).label(std::to_string(legends.at(x).value));
-//
-//
-//        sciplot::Canvas canvas = {{fig}};
-//        canvas.size(1000, 1000);
-//        std::string fileName = "/output"+ std::to_string(x)+".svg";
-//        canvas.save(graphDir+fileName);
-//    }
-
-
-
-
 }
