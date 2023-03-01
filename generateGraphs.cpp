@@ -94,7 +94,7 @@ void writeData(std::string species, std::map<double, std::vector<double>> mean, 
         std::ofstream outputFile(graphName);
 
         // outputing to csv file from here.
-        outputFile << "species\t" << "species value\t"<< "mean\t" << "stddev\n";
+        outputFile << "parameter, " << "species value, "<< "mean, " << "stddev\n";
 
         if(currentMean.size() != currentSD.size()) return;
 
@@ -103,8 +103,8 @@ void writeData(std::string species, std::map<double, std::vector<double>> mean, 
         outputFile.precision(10);
 
         for(int i = 0; i < size; i++){
-            outputFile << legends.at(0).currentParameter << "\t" << currentLegend.at(i) << "\t";
-            outputFile << currentMean.at(i) << "\t" << currentSD.at(i) << "\n";
+            outputFile << legends.at(0).currentParameter << ", " << currentLegend.at(i) << ", ";
+            outputFile << currentMean.at(i) << ", " << currentSD.at(i) << "\n";
         }
         outputFile << std::flush;
         outputFile.close();

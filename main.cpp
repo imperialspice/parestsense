@@ -21,6 +21,7 @@ struct Options{
   std::string outputDir = "";
   std::string paramDir = "";
   std::string tomlDir = "";
+  int batchSize = 100000;
 };
 Options options;
 
@@ -286,6 +287,10 @@ void setupOptions(const toml::table& textOptions){
     if(textOptions.at("toml_dir").is_string()){
         options.tomlDir = textOptions.at("toml_dir").as_string();
     }
+    if(textOptions.at("batchSize").is_integer()){
+        options.batchSize = textOptions.at("batchSize").as_integer();
+    }
+
 
 
 }
@@ -394,6 +399,6 @@ int main() {
     // sensitivity
     int count = countItterations(globalData);
     std::cout << "Count: " << count << std::endl;
-    run(globalData, 0, 1000, count);
+    run(globalData, 0, options.batchSize, count);
     return 0;
 }
