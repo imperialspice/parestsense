@@ -90,6 +90,7 @@ void writeData(std::string species, std::map<double, std::vector<double>> mean, 
             currentLegend.push_back(i.value);
         }
         std::string graphName = graphDir+"/figure_param_"+legends.at(0).currentParameter+"_species_"+std::to_string(sp)+".csv";
+        std::cout << "Outputting: " << graphName << std::endl;
         std::ofstream outputFile(graphName);
 
         // outputing to csv file from here.
@@ -138,9 +139,14 @@ int main(int argv, char** argc){
         tomlFiles.push_back(entry.path());
     }
 
-    std::map<double, std::vector<double>> mean;
-    std::map<double, std::vector<double>> stddiv;
-    std::vector<legend> legends;
+
+//    std::map<double, std::vector<double>> mean;
+//    std::map<double, std::vector<double>> stddiv;
+
+    std::map<int,std::map<double, std::vector<double>>> meanList;
+    std::map<int,std::map<double, std::vector<double>>> stddivList;
+
+    std::map<int,std::vector<legend>> legendList;
 
 
 
@@ -160,50 +166,63 @@ int main(int argv, char** argc){
 
 
 
+        if(legendList.find(cpi.as_integer()) == legendList.end()){
+            legendList.insert_or_assign(cpi.as_integer(), std::vector<legend>{});
+        }
+        auto legends = &legendList.find(cpi.as_integer())->second;
         legend L{
-            cpi_value_cast,
-            std::to_string(cpi.as_integer())
+                cpi_value_cast,
+                std::to_string(cpi.as_integer())
         };
-
-        legends.push_back(L);
+        legends->push_back(L);
 
         auto results = toml::find(file, "results");
         for(auto &i : results.as_table()){
             std::string name(i.first);
             name.replace(0, name.find("_")+1, "");
             int number = std::stoi(name);
+
+
+
             if(i.first.find("mean") != std::variant_npos){
-                if(mean.find(number) == mean.end()){
-                    mean.insert_or_assign(number, std::vector<double>{getFloating(i.second)});
+
+                if(meanList.find(cpi.as_integer()) == meanList.end()){
+                    meanList.insert_or_assign(cpi.as_integer(), std::map<double, std::vector<double>>{});
+                }
+                auto mean = &meanList.find(cpi.as_integer())->second;
+
+
+                if(mean->find(number) == mean->end()){
+                    mean->insert_or_assign(number, std::vector<double>{getFloating(i.second)});
                 }
                 else{
-                    mean.at(number).push_back(getFloating(i.second));
+                    mean->at(number).push_back(getFloating(i.second));
                 }
 
             }
             else{
-                if(stddiv.find(number) == stddiv.end()){
-                    stddiv.insert_or_assign(number, std::vector<double>{getFloating(i.second)});
+
+                if(stddivList.find(cpi.as_integer()) == stddivList.end()){
+                    stddivList.insert_or_assign(cpi.as_integer(), std::map<double, std::vector<double>>{});
+                }
+                auto stddiv = &stddivList.find(cpi.as_integer())->second;
+
+
+                if(stddiv->find(number) == stddiv->end()){
+                    stddiv->insert_or_assign(number, std::vector<double>{getFloating(i.second)});
                 }
                 else{
-                    stddiv.at(number).push_back(getFloating(i.second));
+                    stddiv->at(number).push_back(getFloating(i.second));
                 }
 
             }
         }
 
 
-        // TODO: Split lists so that the parameters for one file are always the same.
 
 
         //
 
-        if(mode == 0){
-            plot(species, mean,  stddiv, legends, graphDir, "");
-        }
-        else{
-            writeData(species, mean, stddiv, legends, graphDir, "");
-        }
 
 //        for(int i = 0; i < results.size(); i++){
 //            auto result = results.(i);
@@ -214,6 +233,24 @@ int main(int argv, char** argc){
 //                stddiv.at(i).push_back(result.as_floating());
 //            }
 //        }
+
+    }
+    // TODO: Split lists so that the parameters for one file are always the same.
+    // use the key from mean to lookup everywhere else
+    for(auto it = meanList.begin(); it != meanList.end(); it++){
+        auto mean = it->second;
+        auto stddiv = stddivList.find(it->first);
+        auto legends = legendList.find(it->first);
+        std::string paramName = "speices_" + std::to_string(it->first);
+
+        if(mode == 0){
+            plot(species, mean,  stddiv->second, legends->second, graphDir, paramName);
+        }
+        else{
+            writeData(species, mean, stddiv->second, legends->second, graphDir, paramName);
+        }
+
+
 
     }
 
