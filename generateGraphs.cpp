@@ -17,6 +17,21 @@ struct graph{
     std::string fileName;
 };
 
+double globalCount = 0.0;
+double totalCount = 0.0;
+
+#define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
+#define PBWIDTH 60
+
+void printProgress(double percentage) {
+    int val = (int) (percentage * 100);
+    int lpad = (int) (percentage * PBWIDTH);
+    int rpad = PBWIDTH - lpad;
+    printf("\r%3d%% [%.*s%*s]", val, lpad, PBSTR, rpad, "");
+    fflush(stdout);
+}
+
+
 double getFloating(toml::value value){
     if(value.is_integer()){
         return (double) value.as_integer();
@@ -31,7 +46,7 @@ double getFloating(toml::value value){
 
 void plot(std::string species, std::map<double,std::vector<double>> mean, std::map<double, std::vector<double>> stddiv, std::vector<legend> legends, std::string graphDir, std::string currentSpecies){
 
-    std::cout << "plotting" << std::endl;
+//    std::cout << "plotting" << std::endl;
 
     int species_int = std::stoi(species);
     if(species_int > mean.size()){std::cout << "Specific species value too large."; exit(0);}
@@ -73,7 +88,7 @@ void plot(std::string species, std::map<double,std::vector<double>> mean, std::m
 }
 
 void writeData(std::string species, std::map<double, std::vector<double>> mean, std::map<double, std::vector<double>> stddiv, std::vector<legend> legends, std::string graphDir, std::string currentSpecies){
-    std::cout << "Outputing CSV Files." << std::endl;
+//    std::cout << "Outputing CSV Files." << std::endl;
 
     int species_int = std::stoi(species);
     if(species_int > mean.size()){std::cout << "Specific species value too large."; exit(0);}
@@ -90,7 +105,7 @@ void writeData(std::string species, std::map<double, std::vector<double>> mean, 
             currentLegend.push_back(i.value);
         }
         std::string graphName = graphDir+"/figure_param_"+legends.at(0).currentParameter+"_species_"+std::to_string(sp)+".csv";
-        std::cout << "Outputting: " << graphName << std::endl;
+//        std::cout << "Outputting: " << graphName << std::endl;
         std::ofstream outputFile(graphName);
 
         // outputing to csv file from here.
@@ -130,7 +145,7 @@ int main(int argv, char** argc){
     std::string species = std::string(argc[3]);
     int mode = std::stoi(argc[4]);
 
-    std::cout << dataDir << graphDir << species << std::endl;
+//    std::cout << dataDir << graphDir << species << std::endl;
 
     // hard code dir
     std::vector<std::string> tomlFiles;
@@ -149,8 +164,10 @@ int main(int argv, char** argc){
     std::map<int,std::vector<legend>> legendList;
 
 
+    // get size for progress bar
+    totalCount = tomlFiles.size();
 
-
+    std::cout << "Reading Data Files" << std::endl;
     for(const auto& fileName : tomlFiles){
         auto file = toml::parse(fileName);
         auto investigation = toml::find(file, "investigation");
@@ -217,6 +234,8 @@ int main(int argv, char** argc){
 
             }
         }
+        globalCount++;
+        printProgress(globalCount/totalCount);
 
 
 
@@ -234,9 +253,13 @@ int main(int argv, char** argc){
 //            }
 //        }
 
+
     }
     // TODO: Split lists so that the parameters for one file are always the same.
     // use the key from mean to lookup everywhere else
+    globalCount = 0;
+    std::cout << "\nPrinting Graphs: " << std::endl;
+    totalCount  = meanList.size();
     for(auto it = meanList.begin(); it != meanList.end(); it++){
         auto mean = it->second;
         auto stddiv = stddivList.find(it->first);
@@ -249,9 +272,8 @@ int main(int argv, char** argc){
         else{
             writeData(species, mean, stddiv->second, legends->second, graphDir, paramName);
         }
-
-
-
+        globalCount++;
+        printProgress(globalCount/totalCount);
     }
 
 

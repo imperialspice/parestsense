@@ -12,6 +12,8 @@
 
 //
 double stepSize = 0.1;
+double globalCount = 0.0;
+
 std::string optionLinear = "linear";
 std::string optionallCompare = "every";
 
@@ -22,11 +24,22 @@ struct Options{
   std::string paramDir = "";
   std::string tomlDir = "";
   int batchSize = 100000;
+  std::string logFile = "parest.log";
 };
 Options options;
 
 std::map<std::string, std::vector<double>> globalData;
 
+#define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
+#define PBWIDTH 60
+
+void printProgress(double percentage) {
+    int val = (int) (percentage * 100);
+    int lpad = (int) (percentage * PBWIDTH);
+    int rpad = PBWIDTH - lpad;
+    printf("\r%3d%% [%.*s%*s]", val, lpad, PBSTR, rpad, "");
+    fflush(stdout);
+}
 
 // return the number of simulations to get a full map
 int countItterations(const std::map<std::string, std::vector<double>>& data){
@@ -67,10 +80,9 @@ void writeConfig(std::string fileName, std::vector<double> output){
 int execute(std::string fileParam, std::string fileResults){
     char * buffer;
     buffer = new char[256];
-    snprintf(buffer, 256, "./parest -p %s -d ddat.in -z %s", fileParam.c_str(), fileResults.c_str());
+    snprintf(buffer, 256, "./parest -p %s -d ddat.in -z %s >>%s 2>&1", fileParam.c_str(), fileResults.c_str(), options.logFile.c_str());
     int status = system(buffer);
-    std::cout << "Status Returned: " << status << std::endl;
-   return status;
+    return status;
 
 }
 
@@ -221,7 +233,7 @@ void linear(const std::map<std::string, std::vector<double>> data, int currentCo
         break;
     }
 
-    std::cout << "Current Parameter Being Checked: " << currentParameter << std::endl;
+    //std::cout << "Current Parameter Being Checked: " << currentParameter << std::endl;
 
     // only reading from data currently so it would be safe to iterate over to find and replace the values
 
@@ -255,7 +267,11 @@ void linear(const std::map<std::string, std::vector<double>> data, int currentCo
         std::string tomlFile = options.tomlDir+"/"+uuids::to_string(fileID);
 
         execute(paramFile, outputFile);
+
         readResults(finalFile, outputFile, tomlFile, writeList, currentParameter);
+        globalCount++;
+
+        printProgress(globalCount/totalCount);
     }
 
 }
@@ -289,6 +305,9 @@ void setupOptions(const toml::table& textOptions){
     }
     if(textOptions.at("batchSize").is_integer()){
         options.batchSize = textOptions.at("batchSize").as_integer();
+    }
+    if(textOptions.at("logFile").is_string()){
+        options.logFile = textOptions.at("logFile").as_string();
     }
 
 
@@ -392,13 +411,13 @@ int main() {
     }
 
     for(auto i : globalData){
-        std::cout << "Name: " << i.first<< std::endl;
-        std::cout << "I: " << i.second.at(0) << " E: " << i.second.at(1) << " STEP: " << i.second.at(2) << std::endl;
+//        std::cout << "Name: " << i.first<< std::endl;
+//        std::cout << "I: " << i.second.at(0) << " E: " << i.second.at(1) << " STEP: " << i.second.at(2) << std::endl;
     }
 
     // sensitivity
     int count = countItterations(globalData);
-    std::cout << "Count: " << count << std::endl;
+    //std::cout << "Count: " << count << std::endl;
     run(globalData, 0, options.batchSize, count);
     return 0;
 }
