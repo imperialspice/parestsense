@@ -109,7 +109,7 @@ void writeData(std::string species, std::map<double, std::vector<double>> mean, 
         std::ofstream outputFile(graphName);
 
         // outputing to csv file from here.
-        outputFile << "parameter, " << "species value, "<< "mean, " << "stddev\n";
+        outputFile << "parameter, " << "species value, "<< "lastval, " << "stddev\n";
 
         if(currentMean.size() != currentSD.size()) return;
 
@@ -201,7 +201,7 @@ int main(int argv, char** argc){
 
 
 
-            if(i.first.find("mean") != std::variant_npos){
+            if(i.first.find("lastval") != std::variant_npos){
 
                 if(meanList.find(cpi.as_integer()) == meanList.end()){
                     meanList.insert_or_assign(cpi.as_integer(), std::map<double, std::vector<double>>{});

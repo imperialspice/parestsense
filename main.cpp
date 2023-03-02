@@ -124,6 +124,16 @@ std::vector<std::vector<double>> readTo (std::string fileName){
 
 }
 
+std::vector<double> lastVal(std::vector<std::vector<double>> data){
+    std::vector<double> rtn;
+    for(auto i : data){
+        if(!data.empty()){
+            rtn.push_back(i.back());
+        }
+    }
+    return rtn;
+}
+
 std::vector<double> mean(std::vector<std::vector<double>> data){
     std::vector<double> rtn;
     for(auto i : data){
@@ -170,7 +180,7 @@ void writeToTOML(std::string fileName, std::vector<double> &params, std::vector<
     }
     tomlOutput << "[results]\n" << std::flush;
     for(int i = 0; i < mean.size(); i++){
-        tomlOutput << "mean_" << i << " = " << mean.at(i) << std::endl;
+        tomlOutput << "lastval_" << i << " = " << mean.at(i) << std::endl;
         tomlOutput << "stddiv_" << i << " = " << stddiv.at(i) << std::endl;
     }
     tomlOutput.close();
@@ -192,8 +202,12 @@ void readResults(std::string fileOutput, std::string fileResults, std::string to
         finalOutput << "\n" << std::flush;
     }
     // add data representations here like the sd and mean calculations
-    auto means = mean(results);
-    for(auto i : means){
+//    auto means = mean(results);
+//    for(auto i : means){
+//        finalOutput << i << "\t";
+//    }
+    auto lastVals = lastVal(results);
+    for(auto i : lastVals){
         finalOutput << i << "\t";
     }
     finalOutput << "\n";
@@ -206,7 +220,7 @@ void readResults(std::string fileOutput, std::string fileResults, std::string to
 
     finalOutput.close();
 
-    writeToTOML(tomlResults, params, means, stddev, currentParameter);
+    writeToTOML(tomlResults, params, lastVals, stddev, currentParameter);
 
 }
 
@@ -419,5 +433,6 @@ int main() {
     int count = countItterations(globalData);
     //std::cout << "Count: " << count << std::endl;
     run(globalData, 0, options.batchSize, count);
+    std::cout << std::endl;
     return 0;
 }
