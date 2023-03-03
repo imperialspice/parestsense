@@ -235,6 +235,7 @@ int main(int argv, char** argc){
             }
         }
         globalCount++;
+        std::cerr << "Current Count at: " << globalCount <<std::endl;
         printProgress(globalCount/totalCount);
 
 
