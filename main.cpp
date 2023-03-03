@@ -220,6 +220,9 @@ void readResults(std::string fileOutput, std::string fileResults, std::string to
 
     finalOutput.close();
 
+    std::cout << "Current Param: " << currentParameter << std::endl;
+
+
     writeToTOML(tomlResults, params, lastVals, stddev, currentParameter);
 
 }
@@ -235,19 +238,28 @@ void linear(const std::map<std::string, std::vector<double>> data, int currentCo
     double step;
     double lLimit;
     double hLimit;
-    int listPosition = 0;
+    int listPosition = 0; // the forwards increment is addressed further into program.
     int currentParameter = 0;
+    int runningTotal = 0; // work out which variable to run now.
     for(auto i : data){
+        std::cout << "Each requested dataset is here: " << std::endl;
+        std::cout << i.second.at(0) << " " << i.second.at(1) << " " << i.second.at(2) << " " << i.second.at(3) << std::endl;
         listPosition++;
-        if((count - i.second.at(3)) >= 0) {count = count - i.second.at(3); currentParameter++; continue;}
-        position = i.second.at(0) + i.second.at(2)*count;
+        // add to running total
+        runningTotal += i.second.at(3);
+
+        if((currentCount >= runningTotal)){currentParameter++; continue;}
+
+//        if((count - i.second.at(3)) >= 0) {count = count - i.second.at(3); currentParameter++; continue;}
+
+        position = i.second.at(0);
         lLimit = i.second.at(0);
         hLimit = i.second.at(1);
         step = i.second.at(2);
         break;
     }
 
-    //std::cout << "Current Parameter Being Checked: " << currentParameter << std::endl;
+    std::cout << "Current Parameter Being Checked: " << currentParameter << std::endl;
 
     // only reading from data currently so it would be safe to iterate over to find and replace the values
 
@@ -257,7 +269,7 @@ void linear(const std::map<std::string, std::vector<double>> data, int currentCo
     for(int x = 0; x < currentTarget; x++){
         double currentValue = position + x*step;
         if(currentValue > hLimit){
-            linear(data, count+x, currentTarget-x, totalCount);
+            linear(data, count+(x-1), currentTarget-(x-1), totalCount);
             break;
         }
 
