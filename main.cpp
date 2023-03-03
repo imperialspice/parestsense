@@ -431,7 +431,7 @@ int main() {
 
     // sensitivity
     int count = countItterations(globalData);
-    //std::cout << "Count: " << count << std::endl;
+    std::cout << "Target Iterations Count: " << count << std::endl;
     run(globalData, 0, options.batchSize, count);
     std::cout << std::endl;
     return 0;
