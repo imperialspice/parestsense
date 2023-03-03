@@ -20,7 +20,7 @@ def loadData(path):
             spiecesmap.append(file[f_trim+8:l_trim])
             fileData = []
             with open(os.path.join(path, file), newline="\n") as f:
-                fileInternal = csv.reader(f, delimiter="\t")
+                fileInternal = csv.reader(f, delimiter=",")
                 for row in fileInternal:
                     if len(fileData) == 0:
                         for i in range(len(row)):
