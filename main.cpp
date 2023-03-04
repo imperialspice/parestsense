@@ -106,14 +106,27 @@ std::vector<std::vector<double>> readTo (std::string fileName){
         while(((pos = str.find(dividerTab)) != std::string::npos )){
             std::string token = str.substr(0, pos);
 
+            double val;
+
+            try{
+                val = std::stod(token);
+            }
+            catch (std::out_of_range &e){
+                std::cout << "Exception Caught, the number " << token << " cannot be converted to double safely." << std::endl;
+                std::cout << "The program will set this value to 0 and continue." << std::endl;
+                std::cout << "This error is contained within File: " << fileName << std::endl;
+                val = 0.0;
+            }
+
             // only add columns at the start of the document.
             if(newLine == 0) {
-                std::vector<double> tmp = {std::stod(token)};
+                // number may be below representable double.
+
+                std::vector<double> tmp = {val};
                 data.push_back(std::move(tmp));
             }
                 // if not the first round then no more rows should be added so data.size is immutable
-            else data.at(insertRounds % data.size()).push_back(std::stod(token));
-
+            else { data.at(insertRounds % data.size()).push_back(val); }
             str.erase(0, pos+dividerTab.length());
             insertRounds++;
         }
